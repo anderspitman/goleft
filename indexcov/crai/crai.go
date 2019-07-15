@@ -1,6 +1,10 @@
-package crai
+package main
 
 import (
+	"os"
+	"compress/gzip"
+        //"net/http"
+	//arg "github.com/alexflint/go-arg"
 	"bufio"
 	"fmt"
 	"io"
@@ -189,4 +193,40 @@ func ReadIndex(r io.Reader) (*Index, error) {
 		iline++
 	}
 	return idx, nil
+}
+
+//var cli = &struct {
+//	Url string         `arg:"-i,required,help:CRAI URL"`
+//}{}
+
+func main() {
+
+	//arg.MustParse(cli)
+
+	//f, err := os.Open("index.crai")
+	//if err != nil {
+	//	panic(err)
+	//}
+        //gz, err := gzip.NewReader(f)
+        //resp, err := http.Get("http://localhost:9001/index.crai")
+        //resp, err := http.Get(cli.Url)
+        gz, err := gzip.NewReader(os.Stdin)
+        //gz, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+        idx, err := ReadIndex(gz)
+
+        var currentOffset int64
+
+	for refId, refSizes := range idx.Sizes() {
+                fmt.Printf("#%d\n", refId)
+
+                currentOffset = 0
+
+                for _, size := range refSizes {
+                        fmt.Printf("%d\t%d\n", currentOffset, size)
+                        currentOffset += TileWidth
+                }
+        }
 }
